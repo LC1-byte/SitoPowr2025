@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 function accesso_riservato($tipo_necessario = null) {
     // Controllo se utente loggato

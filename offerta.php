@@ -12,7 +12,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
 }
 
 // Connessione DB con utente 'modificatore'
-$conn = mysqli_connect('localhost', 'modificatore', 'Str0ng#Admin9', 'eco_scambio');
+$conn = mysqli_connect('localhost', 'marco123', 'mk@84L$GG!', 'eco_scambio');
 if (!$conn) {
     die("Errore di connessione al DB.");
 }

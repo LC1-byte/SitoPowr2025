@@ -1,5 +1,7 @@
 <?php
 
+require_once 'connessione.php'; // Include il file di connessione
+
 include "controllo_login.php";
 include "menu.php";
 accesso_riservato('artigiano');  // Solo artigiani possono entrare
@@ -12,10 +14,12 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
     exit;
 }
 
-$conn = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
-if (!$conn) {
-    die("Errore di connessione al DB.");
-}
+// $conn = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
+// if (!$conn) {
+//     die("Errore di connessione al DB.");
+// }
+
+$conn = getConnessione(); // Ottieni la connessione
 
 $userid = $_SESSION['id'];
 $denaro_disponibile = 1000.00; // ipotetico saldo, va messo valore reale se previsto

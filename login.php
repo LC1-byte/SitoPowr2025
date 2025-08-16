@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'connessione.php'; // Include il file di connessione
 
 $error_message = "";
 $user = "";
@@ -24,73 +24,70 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
     $ricordami = isset($_POST['ricordami']);
 
-    // Controllo login nel database
-    $conn = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
+    // Prova a connetterti con le credenziali fornite
+    $conn = mysqli_connect('localhost', $user, $pwd, 'eco_scambio');
     if (!$conn) {
-        die("Errore di connessione al database.");
-    }
-
-    // Uso query preparata per sicurezza
-    $stmt = mysqli_prepare($conn, "SELECT ID, PASSWORD, ARTIGIANO FROM UTENTI WHERE NICK = ?");
-    mysqli_stmt_bind_param($stmt, "s", $user);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $id_utente, $password_db, $artigiano);
-    mysqli_stmt_fetch($stmt);
-    mysqli_stmt_close($stmt);
-    mysqli_close($conn);
-
-    if ($password_db === null) {
-        // Utente non trovato
-        $error_message = "Utente o password errati, riprova.";
+        $error_message = "Errore di connessione al database. Credenziali errate.";
     } else {
-        // Verifico password (qui semplice confronto perché password in chiaro nel DB)
-        if ($pwd === $password_db) {
-            // Login OK: imposto sessione
-            session_regenerate_id(true); // per sicurezza
-            $_SESSION['loggedin'] = true;
-            $_SESSION['nick'] = $user;
-            $_SESSION['id'] = $id_utente;
-            $_SESSION['artigiano'] = $artigiano;
+        // Uso query preparata per sicurezza
+        $stmt = mysqli_prepare($conn, "SELECT ID, PASSWORD, ARTIGIANO FROM UTENTI WHERE NICK = ?");
+        mysqli_stmt_bind_param($stmt, "s", $user);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $id_utente, $password_db, $artigiano);
+        mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+        mysqli_close($conn);
 
-            // Saldo per artigiano o azienda da recuperare
-            if ($artigiano) {
-                $conn2 = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
-                $result = mysqli_query($conn2, "SELECT CREDIT FROM DATI_ARTIGIANI WHERE ID_UTENTE = " . intval($id_utente));
-                if ($result && mysqli_num_rows($result) > 0) {
-                    $row = mysqli_fetch_assoc($result);
-                    $_SESSION['saldo'] = $row['CREDIT'];
-                } else {
-                    $_SESSION['saldo'] = 0;
-                }
-                mysqli_close($conn2);
-            } else {
-                $_SESSION['saldo'] = 0;
-            }
-
-            // Gestione cookie "ricordami"
-            if ($ricordami) {
-                setcookie("eco_user", $user, time() + 72 * 3600);
-                setcookie("eco_pwd", $pwd, time() + 72 * 3600);
-            } else {
-                setcookie("eco_user", "", time() - 3600);
-                setcookie("eco_pwd", "", time() - 3600);
-            }
-
-            // Redirect in base al tipo utente
-            if ($artigiano) {
-                header("Location: domanda.php");
-                exit();
-            } else {
-                header("Location: offerta.php");
-                exit();
-            }
-        } else {
-            // Password errata
+        if ($password_db === null) {
+            // Utente non trovato
             $error_message = "Utente o password errati, riprova.";
+        } else {
+            // Verifico password (qui semplice confronto perché password in chiaro nel DB)
+            if ($pwd === $password_db) {
+                // Login OK: imposto sessione
+                session_regenerate_id(true); // per sicurezza
+                $_SESSION['loggedin'] = true;
+                $_SESSION['nick'] = $user;
+                $_SESSION['id'] = $id_utente;
+                $_SESSION['artigiano'] = $artigiano;
+
+                // Memorizza le credenziali nella sessione
+                $_SESSION['db_user'] = $user;
+                $_SESSION['db_pwd'] = $pwd;
+
+                // Gestione cookie "ricordami"
+                if ($ricordami) {
+                    setcookie("eco_user", $user, time() + 72 * 3600);
+                    setcookie("eco_pwd", $pwd, time() + 72 * 3600);
+                } else {
+                    setcookie("eco_user", "", time() - 3600);
+                    setcookie("eco_pwd", "", time() - 3600);
+                }
+
+                // Redirect in base al tipo utente
+                if ($artigiano) {
+                    header("Location: domanda.php");
+                    exit();
+                } else {
+                    header("Location: offerta.php");
+                    exit();
+                }
+            } else {
+                // Password errata
+                $error_message = "Utente o password errati, riprova.";
+            }
         }
     }
 }
 ?>
+
+
+
+
+
+
+
+<!-- HTML CODE -->
 
 <!DOCTYPE html>
 <html lang="it">

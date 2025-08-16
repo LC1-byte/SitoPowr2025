@@ -2,7 +2,7 @@
 session_start();
 include "menu.php";
 
-$conn = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
+$conn = mysqli_connect('localhost', 'marco123', 'mk@84L$GG!', 'eco_scambio');
 if (!$conn) {
     die("Errore di connessione al database.");
 }
