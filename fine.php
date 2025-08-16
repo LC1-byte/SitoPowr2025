@@ -1,6 +1,7 @@
 <?php
 include "controllo_login.php";
 accesso_riservato("artigiano");
+include "connessione.php"; // ✅ connessione centralizzata
 
 if (!isset($_POST['materiale_id']) || !isset($_POST['quantita'])) {
     echo "<p class='messaggio-errore'>Errore: dati mancanti per completare l'acquisto.</p>";
@@ -19,36 +20,30 @@ if (!is_array($materiale_id) || !is_array($quantita) || count($materiale_id) !==
 
 $utente = $_SESSION['nick'];
 
-$conn = mysqli_connect("localhost", "modificatore", "Str0ng#Admin9", "eco_scambio");
-if (!$conn) {
-    echo "<p class='messaggio-errore'>Errore di connessione al database.</p>";
-    exit;
-}
-
+// Recupero ID utente
 $query_utente = "SELECT ID FROM UTENTI WHERE NICK = '" . mysqli_real_escape_string($conn, $utente) . "'";
 $ris_utente = mysqli_query($conn, $query_utente);
 if (!$ris_utente || mysqli_num_rows($ris_utente) == 0) {
     echo "<p class='messaggio-errore'>Utente non trovato.</p>";
     exit;
 }
-$riga_utente = mysqli_fetch_assoc($ris_utente);
-$id_utente = $riga_utente['ID'];
+$id_utente = mysqli_fetch_assoc($ris_utente)['ID'];
 
+// Recupero credito artigiano
 $query_credito = "SELECT CREDIT FROM DATI_ARTIGIANI WHERE ID_UTENTE = " . intval($id_utente);
 $ris_credito = mysqli_query($conn, $query_credito);
 if (!$ris_credito || mysqli_num_rows($ris_credito) == 0) {
     echo "<p class='messaggio-errore'>Credito artigiano non trovato.</p>";
     exit;
 }
-$riga_credito = mysqli_fetch_assoc($ris_credito);
-$credito = $riga_credito['CREDIT'];
+$credito = mysqli_fetch_assoc($ris_credito)['CREDIT'];
 
+// Recupero materiali
 $ids_esc = array_map('intval', $materiale_id);
 $ids_list = implode(",", $ids_esc);
 
 $query_materiali = "SELECT * FROM MATERIALI WHERE ID IN ($ids_list)";
 $ris_materiali = mysqli_query($conn, $query_materiali);
-
 if (!$ris_materiali) {
     echo "<p class='messaggio-errore'>Errore nel recupero materiali.</p>";
     exit;
@@ -59,6 +54,7 @@ while ($row = mysqli_fetch_assoc($ris_materiali)) {
     $materiali[$row['ID']] = $row;
 }
 
+// Calcolo totale ordine e verifica disponibilità
 $totale_ordine = 0.0;
 for ($i = 0; $i < count($materiale_id); $i++) {
     $id_mat = intval($materiale_id[$i]);
@@ -83,6 +79,7 @@ if ($totale_ordine > $credito) {
     exit;
 }
 
+// Transazione per aggiornamento materiali e credito
 mysqli_begin_transaction($conn);
 
 try {
@@ -115,6 +112,7 @@ try {
     exit;
 }
 
+// Recupero materiali aggiornati
 $query_materiali_agg = "SELECT ID, NOME, QUANTITA FROM MATERIALI WHERE ID IN ($ids_list)";
 $ris_materiali_agg = mysqli_query($conn, $query_materiali_agg);
 if (!$ris_materiali_agg) {
@@ -135,7 +133,6 @@ if (!$ris_materiali_agg) {
 
 <div class="contenuto-acquisto">
     <h1 class="titolo-principale">Acquisto effettuato correttamente</h1>
-
     <p class="testo-base">Il tuo acquisto è stato registrato con successo.</p>
 
     <h2 class="sottotitolo">Quantità disponibili aggiornate dopo l'acquisto:</h2>
@@ -157,8 +154,8 @@ if (!$ris_materiali_agg) {
     <p><a class="link-home" href="home.php">Torna alla home</a></p>
 </div>
 <footer>
-        © 2025 Eco Scambio - Tutti i diritti riservati
-    </footer>
+    © 2025 Eco Scambio - Tutti i diritti riservati
+</footer>
 
 </body>
 </html>

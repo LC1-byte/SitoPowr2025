@@ -8,8 +8,34 @@ require_once "connessione.php";  // 👈 connessione centralizzata
 
 accesso_riservato('artigiano');  // Solo artigiani possono entrare
 
-// Controllo accesso
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['artigiano'] == false) {
+// Recupero nick utente
+$nick = isset($_SESSION['nick']) ? $_SESSION['nick'] : "non loggato";
+$denaro_disponibile = 0;
+$is_artigiano = false;
+$userid = null;
+
+// Prendo ID utente e stato artigiano dal DB
+if ($nick !== "non loggato") {
+    $query_utente = "SELECT ID, ARTIGIANO FROM UTENTI WHERE NICK = '" . mysqli_real_escape_string($conn, $nick) . "'";
+    $res_utente = mysqli_query($conn, $query_utente);
+
+    if ($res_utente && mysqli_num_rows($res_utente) > 0) {
+        $row_utente = mysqli_fetch_assoc($res_utente);
+        $userid = $row_utente['ID'];
+        $is_artigiano = (bool)$row_utente['ARTIGIANO'];
+
+        // Prendo saldo
+        $query_saldo = "SELECT CREDIT FROM DATI_ARTIGIANI WHERE ID_UTENTE = " . intval($userid);
+        $res_saldo = mysqli_query($conn, $query_saldo);
+        if ($res_saldo && mysqli_num_rows($res_saldo) > 0) {
+            $row_saldo = mysqli_fetch_assoc($res_saldo);
+            $denaro_disponibile = $row_saldo['CREDIT'];
+        }
+    }
+}
+
+// Se utente non artigiano o non loggato
+if (!$is_artigiano || $userid === null) {
     echo "<p>Attenzione! Questa pagina è riservata agli artigiani registrati. Inserisci le credenziali prima di procedere all’acquisto.</p>";
     echo '<p><a href="login.php">Vai al login</a></p>';
     exit;
@@ -71,6 +97,7 @@ if ($filtra_data != "") {
 
 $result = mysqli_query($conn, $sql);
 ?>
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -83,9 +110,7 @@ $result = mysqli_query($conn, $sql);
     <div class="barra-utente">
         <p>
         <?php 
-        echo isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true 
-            ? "Utente: " . htmlspecialchars($_SESSION['nick']) . " | Saldo: " . number_format($denaro_disponibile,2,",",".") . " €" 
-            : "Non loggato | Saldo: 0,00 €"; 
+        echo "Utente: " . htmlspecialchars($nick) . " | Saldo: " . number_format($denaro_disponibile,2,",",".") . " €"; 
         ?>
         </p>
     </div>

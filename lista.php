@@ -1,17 +1,42 @@
 <?php
 session_start();
+include "connessione.php"; // usa la connessione già funzionante ($conn)
 include "menu.php";
 
-$conn = mysqli_connect('localhost', 'marco123', 'mk@84L$GG!', 'eco_scambio');
-if (!$conn) {
-    die("Errore di connessione al database.");
+$conn = getConnessione();
+
+// Recupero nick utente
+$nick = isset($_SESSION['nick']) ? $_SESSION['nick'] : "non loggato";
+$saldo = 0;
+$is_artigiano = false;
+
+// Se utente loggato, prendo saldo aggiornato dal DB
+if ($nick !== "non loggato") {
+    $query_id = "SELECT ID, ARTIGIANO FROM UTENTI WHERE NICK = '" . mysqli_real_escape_string($conn, $nick) . "'";
+    $res_id = mysqli_query($conn, $query_id);
+
+    if ($res_id && mysqli_num_rows($res_id) > 0) {
+        $row_id = mysqli_fetch_assoc($res_id);
+        $id_utente = $row_id['ID'];
+        $is_artigiano = (bool)$row_id['ARTIGIANO'];
+
+        // Prendo saldo
+        $query_saldo = "SELECT CREDIT FROM DATI_ARTIGIANI WHERE ID_UTENTE = " . intval($id_utente);
+        $res_saldo = mysqli_query($conn, $query_saldo);
+        if ($res_saldo && mysqli_num_rows($res_saldo) > 0) {
+            $row_saldo = mysqli_fetch_assoc($res_saldo);
+            $saldo = $row_saldo['CREDIT'];
+        }
+    }
 }
 
+// Filtro per data
 $filtro_data = null;
 if (isset($_SESSION['filtro_data']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_SESSION['filtro_data'])) {
     $filtro_data = $_SESSION['filtro_data'];
 }
 
+// Query materiali
 $query = "SELECT NOME, DESCRIZIONE, QUANTITA, COSTO, DATA FROM MATERIALI";
 if ($filtro_data !== null) {
     $data_esc = mysqli_real_escape_string($conn, $filtro_data);
@@ -21,13 +46,8 @@ $query .= " ORDER BY DATA DESC";
 
 $result = mysqli_query($conn, $query);
 if (!$result) {
-    die("Errore nel recupero dei materiali.");
+    die("Errore nel recupero dei materiali: " . mysqli_error($conn));
 }
-
-$is_artigiano = isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && isset($_SESSION['artigiano']) && $_SESSION['artigiano'] === true;
-
-$nick = isset($_SESSION['nick']) ? $_SESSION['nick'] : "non loggato";
-$saldo = isset($_SESSION['saldo']) ? $_SESSION['saldo'] : 0;
 ?>
 
 <!DOCTYPE html>
@@ -42,7 +62,6 @@ $saldo = isset($_SESSION['saldo']) ? $_SESSION['saldo'] : 0;
     <?php include "menu.php"; ?>
 
     <main class="contenuto-lista">
-
 
         <!-- login stato in alto a destra -->
         <p class="login-stato">

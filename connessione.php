@@ -25,6 +25,4 @@ function getConnessione() {
     return $connessione;
 }
 
-// Imposta charset (per accenti, simboli, ecc.)
-mysqli_set_charset($conn, "utf8mb4");
 ?>

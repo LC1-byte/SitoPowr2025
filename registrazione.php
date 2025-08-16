@@ -2,11 +2,7 @@
 session_start();
 include "menu.php";
 
-// Connessione con privilegi di scrittura
-$conn = mysqli_connect('localhost', 'marco123', 'mk@84L$GG!', 'eco_scambio');
-if (!$conn) {
-    die("<p>Errore di connessione al database.</p>");
-}
+require_once "connessione.php"; // 👈 connessione centralizzata
 
 // Funzione per validare con espressione regolare
 function valida_input($valore, $pattern) {
@@ -148,9 +144,10 @@ mysqli_close($conn);
     <label>Password: <input type="password" name="password" required></label><br>
     <input type="submit" name="registra_artigiano" value="Registrati come Artigiano">
 </form>
+
 <footer>
-        © 2025 Eco Scambio - Tutti i diritti riservati
-    </footer>
+    © 2025 Eco Scambio - Tutti i diritti riservati
+</footer>
 
 </body>
 </html>

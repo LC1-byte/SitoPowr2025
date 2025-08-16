@@ -1,12 +1,30 @@
 <?php
 include('controllo_login.php');
+include('connessione.php'); // connessione al database
+
+$saldo = 0;
+$nick = "non loggato";
 
 if (isset($_SESSION['nick'])) {
     $nick = $_SESSION['nick'];
-    $saldo = isset($_SESSION['saldo']) ? $_SESSION['saldo'] : 0;
-} else {
-    $nick = "non loggato";
-    $saldo = 0;
+
+    // Recupero ID utente
+    $query = "SELECT ID FROM UTENTI WHERE NICK = '" . mysqli_real_escape_string($conn, $nick) . "'";
+    $result = mysqli_query($conn, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $id_utente = $row['ID'];
+
+        // Recupero saldo aggiornato dal database
+        $query_saldo = "SELECT CREDIT FROM DATI_ARTIGIANI WHERE ID_UTENTE = " . intval($id_utente);
+        $result_saldo = mysqli_query($conn, $query_saldo);
+
+        if ($result_saldo && mysqli_num_rows($result_saldo) > 0) {
+            $row_saldo = mysqli_fetch_assoc($result_saldo);
+            $saldo = $row_saldo['CREDIT'];
+        }
+    }
 }
 ?>
 
@@ -23,7 +41,7 @@ if (isset($_SESSION['nick'])) {
 
     <main class="contenuto">
 
-        <!-- PRIMA RIGA: login stato in alto a destra -->
+        <!-- Login stato in alto a destra -->
         <p class="login-stato">
             Utente: <?php echo htmlspecialchars($nick); ?> | Saldo: €<?php echo number_format($saldo, 2); ?>
             <?php if ($nick != "non loggato") { ?>
@@ -33,7 +51,7 @@ if (isset($_SESSION['nick'])) {
             <?php } ?>
         </p>
 
-        <!-- SECONDA RIGA: testo a sinistra -->
+        <!-- Contenuto principale -->
         <div class="home-contenitore">
             <h1 class="home-titolo">Eco</h1>
             <h1 class="home-titolo">Scambio</h1>
@@ -41,7 +59,6 @@ if (isset($_SESSION['nick'])) {
             <p>per un'economia più sostenibile.</p>
         </div>
 
-        <!-- SECONDA RIGA: immagine a destra -->
         <div class="home-img">
             <img src="immagineHome.jpeg" alt="immagine sostenibilità" />
         </div>
