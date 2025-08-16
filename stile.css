@@ -527,3 +527,63 @@ main.contenuto-conferma .link-bottone:focus {
   text-decoration: none;
   cursor: pointer;
 }
+.descrizione-mod {
+    width: 2em;              /* larghezza desiderata */
+    height: 50px;              /* altezza desiderata */
+    padding: 6px 8px;          /* spazio interno */
+    border: 1px solid #ccc;    /* bordo sottile */
+    border-radius: 6px;        /* angoli arrotondati */
+    background-color: #f9f9f9; /* colore leggermente grigio chiaro */
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    line-height: 1.4;
+    resize: vertical;          /* permette di ridimensionare solo in verticale */
+    overflow: auto;            /* scrollbar se il testo è lungo */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.descrizione-mod:focus {
+    border-color: #66afe9;    /* bordo blu quando in focus */
+    box-shadow: 0 0 5px rgba(102, 175, 233, 0.5); /* leggero effetto glow */
+    outline: none;             /* rimuove outline standard */
+}
+.form-registrazione {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    max-width: 400px;
+    background-color: #e6f0e7;
+    padding: 1.5em;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.form-registrazione label {
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
+    color: #1d3e2a;
+}
+
+.form-registrazione input[type="text"],
+.form-registrazione input[type="password"],
+.form-registrazione input[type="date"] {
+    padding: 0.5em 0.7em;
+    border: 1px solid #96df9b;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-registrazione input[type="submit"] {
+    background-color: #9ecf8e;
+    border: none;
+    color: #1d3e2a;
+    font-weight: bold;
+    padding: 0.7em 1.2em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.form-registrazione input[type="submit"]:hover {
+    background-color: #7fc686;
+}

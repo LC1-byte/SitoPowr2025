@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registra_artigiano'])
         $errore = "Nome non valido.";
     } elseif (!valida_input($cognome, "/^[A-Za-z' ]{4,16}$/")) {
         $errore = "Cognome non valido.";
-    } elseif (!valida_input($nascita, "/^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$/")) {
+    } elseif (!valida_input($nascita, "/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/")) {
         $errore = "Data di nascita non valida.";
     } elseif (!valida_input($credito, "/^[0-9]+(\.[05]{1,2})?$/")) {
         $errore = "Credito non valido.";
@@ -115,37 +115,40 @@ mysqli_close($conn);
 </head>
 <body>
 
-<h1>Pagina di registrazione</h1>
+<main class="contenuto-principale">
 
-<?php if ($errore !== ""): ?>
-    <p style="color:red;"><?php echo htmlspecialchars($errore); ?></p>
-<?php elseif ($successo !== ""): ?>
-    <p style="color:green;"><?php echo htmlspecialchars($successo); ?></p>
-<?php endif; ?>
+    <?php if ($errore !== ""): ?>
+        <p class="messaggio-errore"><?php echo htmlspecialchars($errore); ?></p>
+    <?php elseif ($successo !== ""): ?>
+        <p style="color:green; font-weight:bold;"><?php echo htmlspecialchars($successo); ?></p>
+    <?php endif; ?>
 
-<h2>Registrazione Azienda</h2>
-<form method="post" action="registrazione.php">
-    <label>Ragione Sociale: <input type="text" name="ragione" required></label><br>
-    <label>Indirizzo (Via/Corso...): <input type="text" name="address2" required></label><br>
-    <label>Username: <input type="text" name="nick" required></label><br>
-    <label>Password: <input type="password" name="password" required></label><br>
-    <input type="submit" name="registra_azienda" value="Registrati come Azienda">
-</form>
+    <h2>Registrazione Azienda</h2>
+    <form method="post" action="registrazione.php">
+        <label>Ragione Sociale: <input type="text" name="ragione" required></label><br>
+        <label>Indirizzo (Via/Corso...): <input type="text" name="address2" required></label><br>
+        <label>Username: <input type="text" name="nick" required></label><br>
+        <label>Password: <input type="password" name="password" required></label><br>
+        <input type="submit" name="registra_azienda" value="Registrati come Azienda">
+    </form>
 
-<h2>Registrazione Artigiano/Designer</h2>
-<form method="post" action="registrazione.php">
-    <label>Nome: <input type="text" name="name" required></label><br>
-    <label>Cognome: <input type="text" name="surname" required></label><br>
-    <label>Data di nascita (aaaa-mm-gg): <input type="date" name="birthdate" required></label><br>
-    <label>Credito: <input type="text" name="credit" required></label><br>
-    <label>Indirizzo (Via/Corso...): <input type="text" name="address" required></label><br>
-    <label>Username: <input type="text" name="nick" required></label><br>
-    <label>Password: <input type="password" name="password" required></label><br>
-    <input type="submit" name="registra_artigiano" value="Registrati come Artigiano">
-</form>
+    <h2>Registrazione Artigiano/Designer</h2>
+    <form method="post" action="registrazione.php">
+        <label>Nome: <input type="text" name="name" required></label><br>
+        <label>Cognome: <input type="text" name="surname" required></label><br>
+        <label>Data di nascita (aaaa-mm-gg): <input type="date" name="birthdate" required></label><br>
+        <label>Credito: <input type="text" name="credit" required></label><br>
+        <label>Indirizzo (Via/Corso...): <input type="text" name="address" required></label><br>
+        <label>Username: <input type="text" name="nick" required></label><br>
+        <label>Password: <input type="password" name="password" required></label><br>
+        <input type="submit" name="registra_artigiano" value="Registrati come Artigiano">
+    </form>
+
+</main>
+
 <footer>
-        © 2025 Eco Scambio - Tutti i diritti riservati
-    </footer>
+    © 2025 Eco Scambio - Tutti i diritti riservati
+</footer>
 
 </body>
 </html>

@@ -1,5 +1,4 @@
 <?php
-
 include "controllo_login.php";
 include('connessione.php'); 
 accesso_riservato('azienda');  // Solo aziende possono entrare
@@ -12,15 +11,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
     exit;
 }
 
-// Connessione DB con utente 'modificatore'
-$conn = mysqli_connect('localhost', 'modificatore', 'Str0ng#Admin9', 'eco_scambio');
-if (!$conn) {
-    die("Errore di connessione al DB.");
-}
-
 $userid = $_SESSION['id'];
-$errors = [];
-$success_message = "";
 
 // Funzione validazione nome
 function valida_nome($nome) {
@@ -41,23 +32,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inserisci'])) {
     $data = trim($_POST['data']);
     $quantita = trim($_POST['quantita']);
     $costo = trim($_POST['costo']);
+    $errors = [];
 
     // Validazioni
-    if (!valida_nome($nome)) {
-        $errors[] = "Nome non valido: deve essere tra 10 e 40 caratteri, solo lettere, numeri e spazi.";
-    }
-    if (strlen($descrizione) > 250) {
-        $errors[] = "Descrizione troppo lunga (max 250 caratteri).";
-    }
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data)) {
-        $errors[] = "Data non valida (formato aaaa-mm-gg).";
-    }
-    if (!ctype_digit($quantita) || intval($quantita) < 0) {
-        $errors[] = "Quantità deve essere un numero intero positivo.";
-    }
-    if (!is_numeric($costo) || !valida_costo(floatval($costo))) {
-        $errors[] = "Costo non valido: deve essere multiplo di 0.05 euro.";
-    }
+    if (!valida_nome($nome)) $errors[] = "Nome non valido: deve essere tra 10 e 40 caratteri, solo lettere, numeri e spazi.";
+    if (strlen($descrizione) > 250) $errors[] = "Descrizione troppo lunga (max 250 caratteri).";
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data)) $errors[] = "Data non valida (formato aaaa-mm-gg).";
+    if (!ctype_digit($quantita) || intval($quantita) < 0) $errors[] = "Quantità deve essere un numero intero positivo.";
+    if (!is_numeric($costo) || !valida_costo(floatval($costo))) $errors[] = "Costo non valido: deve essere multiplo di 0.05 euro.";
 
     if (empty($errors)) {
         $nome_esc = mysqli_real_escape_string($conn, $nome);
@@ -66,17 +48,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inserisci'])) {
         $quantita_int = intval($quantita);
         $costo_float = floatval($costo);
 
-        $sql = "INSERT INTO MATERIALI (NOME, DESCRIZIONE, DATA, QUANTITA, COSTO, ID_UTENTE)
-                VALUES ('$nome_esc', '$descrizione_esc', '$data_esc', $quantita_int, $costo_float, $userid)";
+        // Inserimento materiale con campo attivo=1
+        $sql = "INSERT INTO MATERIALI (NOME, DESCRIZIONE, DATA, QUANTITA, COSTO, ID_UTENTE, ATTIVO)
+                VALUES ('$nome_esc', '$descrizione_esc', '$data_esc', $quantita_int, $costo_float, $userid, 1)";
         if (mysqli_query($conn, $sql)) {
-            $success_message = "Materiale inserito correttamente.";
+            header("Location: lista.php");
+            exit;
         } else {
             $errors[] = "Errore nell'inserimento del materiale.";
         }
     }
 }
 
-// Modifica materiale esistente (descrizione, quantità, costo)
+// Modifica materiale esistente
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifica'])) {
     $id_materiale = intval($_POST['id_materiale']);
     $descrizione = trim($_POST['descrizione_mod']);
@@ -84,28 +68,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifica'])) {
     $costo = trim($_POST['costo_mod']);
     $errors_mod = [];
 
-    if (strlen($descrizione) > 250) {
-        $errors_mod[] = "Descrizione troppo lunga (max 250 caratteri).";
-    }
-    if (!ctype_digit($quantita) || intval($quantita) < 0) {
-        $errors_mod[] = "Quantità deve essere un numero intero positivo.";
-    }
-    if (!is_numeric($costo) || !valida_costo(floatval($costo))) {
-        $errors_mod[] = "Costo non valido: deve essere multiplo di 0.05 euro.";
-    }
+    if (strlen($descrizione) > 250) $errors_mod[] = "Descrizione troppo lunga (max 250 caratteri).";
+    if (!ctype_digit($quantita) || intval($quantita) < 0) $errors_mod[] = "Quantità deve essere un numero intero positivo.";
+    if (!is_numeric($costo) || !valida_costo(floatval($costo))) $errors_mod[] = "Costo non valido: deve essere multiplo di 0.05 euro.";
 
     if (empty($errors_mod)) {
         $descrizione_esc = mysqli_real_escape_string($conn, $descrizione);
         $quantita_int = intval($quantita);
         $costo_float = floatval($costo);
 
-        // Controllo che materiale appartenga a utente
         $check_sql = "SELECT ID FROM MATERIALI WHERE ID = $id_materiale AND ID_UTENTE = $userid";
         $check_res = mysqli_query($conn, $check_sql);
         if ($check_res && mysqli_num_rows($check_res) > 0) {
-            $update_sql = "UPDATE MATERIALI SET DESCRIZIONE='$descrizione_esc', QUANTITA=$quantita_int, COSTO=$costo_float WHERE ID=$id_materiale";
+            $update_sql = "UPDATE MATERIALI 
+                           SET DESCRIZIONE='$descrizione_esc', QUANTITA=$quantita_int, COSTO=$costo_float, ATTIVO=1 
+                           WHERE ID=$id_materiale";
             if (mysqli_query($conn, $update_sql)) {
-                $success_message = "Materiale aggiornato correttamente.";
+                header("Location: lista.php");
+                exit;
             } else {
                 $errors_mod[] = "Errore durante l'aggiornamento.";
             }
@@ -114,15 +94,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifica'])) {
         }
     }
 
-    if (!empty($errors_mod)) {
-        $errors = array_merge($errors, $errors_mod);
-    }
+    if (!empty($errors_mod)) $errors = array_merge($errors, $errors_mod);
 }
 
-// Recupero materiali dell'utente azienda
+// Recupero materiali dell'utente per visualizzazione nella tabella
 $sql_materiali = "SELECT * FROM MATERIALI WHERE ID_UTENTE = $userid ORDER BY DATA DESC";
 $res_materiali = mysqli_query($conn, $sql_materiali);
-
 ?>
 
 <!DOCTYPE html>
@@ -133,98 +110,93 @@ $res_materiali = mysqli_query($conn, $sql_materiali);
 </head>
 <body>
 
-<table style="width:100%;"><tr><td style="text-align:right;">
-<?php 
-echo isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true 
-    ? "Utente: " . htmlspecialchars($_SESSION['nick']) . " | Saldo: 0,00 €" 
-    : "Non loggato | Saldo: 0,00 €"; 
-?>
-</td></tr></table>
+<main class="contenuto-principale">
 
-<h1>Offerta: inserimento e modifica materiali</h1>
+  <div class="barra-utente">
+    <?php 
+      echo isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true 
+        ? "Utente: " . htmlspecialchars($_SESSION['nick']) . " | Saldo: 0,00 €" 
+        : "Non loggato | Saldo: 0,00 €"; 
+    ?>
+  </div>
 
-<?php
-if (!empty($errors)) {
-    echo "<ul style='color:red;'>";
-    foreach ($errors as $err) {
-        echo "<li>" . htmlspecialchars($err) . "</li>";
-    }
-    echo "</ul>";
-}
-if ($success_message !== "") {
-    echo "<p style='color:green;'>" . htmlspecialchars($success_message) . "</p>";
-}
-?>
+  <div class="contenuto-secondario">
+    <h1 class="domanda-titolo">Offerta: inserimento e modifica materiali</h1>
 
-<h2>Elenco materiali della tua azienda</h2>
-<?php if ($res_materiali && mysqli_num_rows($res_materiali) > 0) { ?>
-<table border="1" cellspacing="0" cellpadding="5">
-    <thead>
-        <tr>
-            <th>Nome</th><th>Descrizione</th><th>Data</th><th>Quantità</th><th>Costo (€)</th><th>Modifica</th>
-        </tr>
-    </thead>
-    <tbody>
-    <?php while ($row = mysqli_fetch_assoc($res_materiali)) { ?>
-        <tr>
-            <td><?php echo htmlspecialchars($row['NOME']); ?></td>
-            <td>
-                <form method="post" action="offerta.php">
-                    <input type="hidden" name="id_materiale" value="<?php echo $row['ID']; ?>" />
-                    <input type="text" name="descrizione_mod" maxlength="250" value="<?php echo htmlspecialchars($row['DESCRIZIONE']); ?>" />
-            </td>
-            <td><?php echo htmlspecialchars($row['DATA']); ?></td>
-            <td>
-                    <input type="text" name="quantita_mod" size="5" value="<?php echo htmlspecialchars($row['QUANTITA']); ?>" />
-            </td>
-            <td>
-                    <input type="text" name="costo_mod" size="6" value="<?php echo htmlspecialchars(number_format($row['COSTO'],2,'.','')); ?>" />
-            </td>
-            <td>
-                    <input type="submit" name="modifica" value="Modifica" />
-                </form>
-            </td>
-        </tr>
+    <?php if (!empty($errors)) { ?>
+      <div class="messaggio-errore">
+        <ul>
+          <?php foreach ($errors as $err) echo "<li>".htmlspecialchars($err)."</li>"; ?>
+        </ul>
+      </div>
     <?php } ?>
-    </tbody>
-</table>
-<?php } else {
-    echo "<p>Nessun materiale inserito finora.</p>";
-} ?>
 
-<h2>Inserisci nuovo materiale</h2>
-<form method="post" action="offerta.php">
-    <p>
+    <!-- Tabella materiali -->
+    <?php if ($res_materiali && mysqli_num_rows($res_materiali) > 0) { ?>
+      <table class="lista-tabella">
+        <thead>
+          <tr>
+            <th>Nome</th><th>Descrizione</th><th>Data</th><th>Quantità</th><th>Costo (€)</th><th>Modifica</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php while ($row = mysqli_fetch_assoc($res_materiali)) { ?>
+            <tr>
+              <td><?php echo htmlspecialchars($row['NOME']); ?></td>
+              <td>
+                <form method="post" action="offerta.php">
+                  <input type="hidden" name="id_materiale" value="<?php echo $row['ID']; ?>" />
+                  <textarea name="descrizione_mod" class="descrizione-mod" maxlength="250"><?php echo htmlspecialchars($row['DESCRIZIONE']); ?></textarea>
+              </td>
+              <td><?php echo htmlspecialchars($row['DATA']); ?></td>
+              <td>
+                  <input type="text" name="quantita_mod" size="5" value="<?php echo htmlspecialchars($row['QUANTITA']); ?>" />
+              </td>
+              <td>
+                  <input type="text" name="costo_mod" size="6" value="<?php echo htmlspecialchars(number_format($row['COSTO'],2,'.','')); ?>" />
+              </td>
+              <td>
+                  <input type="submit" name="modifica" value="Modifica" />
+                </form>
+              </td>
+            </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    <?php } else { ?>
+      <p class="nessun-materiale">Nessun materiale inserito finora.</p>
+    <?php } ?>
+
+    <!-- Form inserimento -->
+    <h2>Inserisci nuovo materiale</h2>
+    <form method="post" action="offerta.php">
+      <p>
         <label for="nome">Nome (10-40 caratteri, lettere/numeri/spazi):</label><br/>
         <input type="text" id="nome" name="nome" maxlength="40" required />
-    </p>
-    <p>
+      </p>
+      <p>
         <label for="descrizione">Descrizione (max 250 caratteri):</label><br/>
         <textarea id="descrizione" name="descrizione" maxlength="250"></textarea>
-    </p>
-    <p>
+      </p>
+      <p>
         <label for="data">Data inserimento (aaaa-mm-gg):</label><br/>
         <input type="date" id="data" name="data" required />
-    </p>
-    <p>
-        <label for="quantita">Quantità (numero intero):</label><br/>
+      </p>
+      <p>
+        <label for="quantita">Quantità:</label><br/>
         <input type="number" id="quantita" name="quantita" min="0" required />
-    </p>
-    <p>
-        <label for="costo">Costo unitario (€), multipli di 0.05:</label><br/>
+      </p>
+      <p>
+        <label for="costo">Costo (€) multiplo di 0.05:</label><br/>
         <input type="text" id="costo" name="costo" required />
-    </p>
-    <p><input type="submit" name="inserisci" value="Inserisci nuovo materiale" /></p>
-</form>
+      </p>
+      <p>
+        <input type="submit" name="inserisci" value="Inserisci materiale" />
+      </p>
+    </form>
 
-<p><a href="home.php">Torna alla home</a></p>
-<footer>
-        © 2025 Eco Scambio - Tutti i diritti riservati
-    </footer>
+  </div>
+</main>
 
 </body>
 </html>
-
-<?php
-mysqli_close($conn);
-?>
