@@ -1,12 +1,7 @@
 <?php
 session_start();
 include "menu.php";
-
-// Connessione con privilegi di scrittura
-$conn = mysqli_connect("localhost", "modificatore", "Str0ng#Admin9", "eco_scambio");
-if (!$conn) {
-    die("<p>Errore di connessione al database.</p>");
-}
+include('connessione.php'); 
 
 // Funzione per validare con espressione regolare
 function valida_input($valore, $pattern) {

@@ -1,6 +1,7 @@
 <?php
 
 include "controllo_login.php";
+include('connessione.php'); 
 accesso_riservato('azienda');  // Solo aziende possono entrare
 include "menu.php";
 

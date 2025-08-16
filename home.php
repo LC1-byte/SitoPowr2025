@@ -1,5 +1,6 @@
 <?php
 include('controllo_login.php');
+include('connessione.php'); 
 
 if (isset($_SESSION['nick'])) {
     $nick = $_SESSION['nick'];

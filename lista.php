@@ -1,11 +1,8 @@
 <?php
 session_start();
 include "menu.php";
+include('connessione.php'); 
 
-$conn = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
-if (!$conn) {
-    die("Errore di connessione al database.");
-}
 
 $filtro_data = null;
 if (isset($_SESSION['filtro_data']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_SESSION['filtro_data'])) {

@@ -1,5 +1,6 @@
 <?php
 include "controllo_login.php";
+include('connessione.php'); 
 accesso_riservato("artigiano");
 
 if (!isset($_POST['materiale_id']) || !isset($_POST['quantita'])) {
