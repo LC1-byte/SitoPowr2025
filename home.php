@@ -50,6 +50,8 @@ if (isset($_SESSION['nick'])) {
 
     <footer>
         © 2025 Eco Scambio - Tutti i diritti riservati
+
+        On branch develop
     </footer>
 
 </body>

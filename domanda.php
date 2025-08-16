@@ -1,5 +1,7 @@
 <?php
-session_start();
+
+require_once 'connessione.php'; // Include il file di connessione
+
 include "controllo_login.php";
 include "menu.php";
 require_once "connessione.php";  // 👈 connessione centralizzata
@@ -12,6 +14,13 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
     echo '<p><a href="login.php">Vai al login</a></p>';
     exit;
 }
+
+// $conn = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
+// if (!$conn) {
+//     die("Errore di connessione al DB.");
+// }
+
+$conn = getConnessione(); // Ottieni la connessione
 
 $userid = $_SESSION['id'];
 $denaro_disponibile = isset($_SESSION['saldo']) ? $_SESSION['saldo'] : 0;
