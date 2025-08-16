@@ -1,0 +1,529 @@
+body {
+  display: grid;
+  grid-template-rows: auto 2fr auto;
+  grid-template-areas:
+    "menu"
+    "contenuto"
+    "footer";
+  height: 100vh;
+  margin: 0;
+}
+
+/* MENU */
+nav.menu {
+  grid-area: menu;
+  background-color: white;
+  padding:0.2em;
+}
+
+ul.menu {
+  list-style: none;
+  margin: 0.1vw;
+  padding: 0.8em;
+  display: flex;
+  gap: 4em;
+  justify-content: center; 
+}
+
+ul.menu li {
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+
+}
+
+ul.menu li a {
+  text-decoration: none;
+  color: black;
+  padding: 0.5em 1em;
+  display: block;
+  
+}
+ul.menu li a.non-attivo {
+  color: #acb0a8;
+  cursor: default;
+  pointer-events: none;
+  text-decoration: none;
+}
+
+
+ul.menu li a:hover {
+  background-color: #96df9b;
+  color: white;
+}
+
+
+
+/* CONTENUTO PRINCIPALE */
+main.contenuto {
+  grid-area: contenuto;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    ". login-stato"
+    "home-contenitore home-img";
+  gap: 2em;
+  align-items: center;
+  padding: 2em;
+  background-color: #c7ddb9 ; /* verde chiaro */
+  color: #1d3e2a;
+}
+
+.login-stato {
+  grid-area: login-stato;
+  justify-self: end; /* barra utente in alto a destra */
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+  margin-bottom: 0.5em;
+}
+
+/* TESTO */
+.home-contenitore {
+  grid-area: home-contenitore;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-left: 10vw;
+  font-size: 2vw;
+}
+
+.home-titolo {
+  margin: 0;
+  font-weight: 300;
+  font-size: 6vw;
+  line-height: 1.1;
+  color: #1d3e2a;
+  font-family: Arial, Helvetica, sans-serif;}
+
+  
+
+/* IMMAGINE */
+.home-img {
+  grid-area: home-img;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-img img {
+  max-width: 100%;
+  height: auto;
+  width: auto;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+  margin-right: 10vw;
+}
+
+/* FOOTER */
+footer {
+  grid-area: footer;
+  background-color: white;
+  padding: 1.2em;
+  text-align: center;
+  color: black;
+}
+main.contenuto-lista {
+  grid-area: contenuto;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "login-stato"
+    "lista-contenitore";
+  background-color: #c7ddb9;
+  padding: 2em;
+  color: #1d3e2a;
+  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+}
+
+
+.lista-contenitore {
+  grid-area: lista-contenitore;
+  max-width: 80%;
+  margin: 0 auto;
+  justify-items: center;
+}
+
+.lista-titolo {
+  font-size: 2rem;
+  margin-bottom: 1em;
+  text-align: center;
+  color: #1d3e2a;
+}
+
+.filtro-attivo {
+  font-style: italic;
+  margin-bottom: 1em;
+}
+
+.lista-tabella {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #c7ddb9; /* verde chiaro di sfondo */
+  color: #1d3e2a;
+}
+
+.lista-tabella th, .lista-tabella td {
+  border: 1px solid #a2c48a;
+  padding: 0.8em;
+  text-align: left;
+}
+
+.lista-tabella th {
+  background-color: #9ecf8e; /* verde header */
+  color: #1d3e2a;
+}
+
+/* Colori alternati sulle righe della tabella (tbody) */
+.lista-tabella tbody tr:nth-child(even) td {
+  background-color: #e6f0e7; /* verde più chiaro per righe pari */
+}
+
+.lista-tabella tbody tr:nth-child(odd) td {
+  background-color: #c7ddb9; /* verde base per righe dispari */
+}
+
+
+.nessun-materiale {
+  font-style: italic;
+  margin-top: 1em;
+}
+
+.link-home {
+  display: inline-block;
+  margin-top: 2em;
+  background-color: #9ecf8e;
+  padding: 0.5em 1em;
+  text-decoration: none;
+  color: #1d3e2a;
+  border-radius: 5px;
+  justify-self: center;
+}
+
+.link-home:hover {
+  background-color: #7fc686;
+}
+/* Imposta box-sizing per gestire meglio padding e bordi */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+
+
+
+
+
+/* Griglia interna main contenuto */
+main.contenuto-principale {
+  grid-area: contenuto;
+  display: grid;
+  grid-template-rows: auto 1fr; /* due righe: prima la barra utente, sotto la tabella */
+  grid-template-columns: 1fr;   /* una colonna sola */
+  grid-template-areas:
+    "barra-utente"
+    "contenuto-secondario";
+  gap: 1.5em;
+  padding: 2em;
+  background-color: #c7ddb9;
+  color: #1d3e2a;
+}
+
+/* Titolo in alto a sinistra */
+.domanda-titolo {
+  grid-area: domanda-titolo;
+  font-size: 2rem;
+  margin: 0 0 1em 0;
+  align-self: center;
+}
+
+/* Barra utente in alto a destra, rimane anche nella seconda riga */
+.barra-utente {
+  grid-area: barra-utente;
+  justify-self: end; /* barra utente in alto a destra */
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+  margin-bottom: 0.5em;
+ 
+}
+.contenuto-secondario {
+  grid-area: contenuto-secondario;
+  /* qui dentro hai il contenuto vero, compresa la tabella */
+}
+
+/* Messaggi d'errore */
+.messaggio-errore {
+  color: red;
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+.filtro-data {
+  margin-bottom: 1.5em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em;
+}
+/* Stile filtro data */
+.filtro-data label {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2f5d30;
+  min-width: 220px;
+}
+
+.filtro-data input[type="date"] {
+  padding: 0.5em 0.7em;
+  font-size: 1rem;
+  border: 1.8px solid #96df9b;
+  border-radius: 8px;
+  box-shadow: inset 1px 1px 3px #c7ddb9;
+  transition: border-color 0.3s ease;
+  cursor: pointer;
+  min-width: 190px;
+}
+.filtro-data input[type="date"]:focus {
+  outline: none;
+  border-color: #1d3e2a;
+  box-shadow: 0 0 8px #5ba55b;
+}
+
+.filtro-data input[type="submit"][name="filtra"] {
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  padding: 0.55em 1.3em;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  transition: background-color 0.3s ease, box-shadow 0.2s ease;
+}
+
+.filtro-data input[type="submit"][name="filtra"]:hover {
+  background-color: #3b7d3b;
+  box-shadow: 0 6px 10px rgba(0,0,0,0.25);
+}
+.tabella-domanda th,
+.tabella-domanda td {
+  padding: 0.7em 1em;
+  border: 1px solid #96df9b;
+  text-align: left;
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+.tabella-domanda {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1em;
+  color: #1d3e2a;
+}
+
+.tabella-domanda th,
+.tabella-domanda td {
+  padding: 0.5em 1em;
+  border: 1px solid #aac28f;
+}
+
+.tabella-domanda th:nth-child(3),
+.tabella-domanda td:nth-child(3) {
+  min-width: 140px;
+}
+
+.tabella-domanda th:nth-child(2),
+.tabella-domanda td:nth-child(2) {
+  min-width: 250px;
+}
+
+.tabella-domanda tbody tr:nth-child(even) td {
+  background-color: #d4e2bb;
+}
+
+.tabella-domanda tbody tr:nth-child(odd) td {
+  background-color: #e6f0db;
+}
+
+.tabella-domanda th {
+  background-color: #9ecf8e;
+  color: #1d3e2a;
+  text-align: left;
+}
+.input-quantita {
+  width: 60px;          /* larghezza fissa, cambia se vuoi */
+  box-sizing: border-box; /* include padding e bordo nella larghezza */
+  padding: 4px 6px;
+  font-size: 1rem;
+}
+
+/* Bottoni */
+.bottoni-domanda {
+  margin-top: 1em;
+}
+
+.bottoni-domanda input[type="submit"] {
+  padding: 0.5em 1em;
+  margin-right: 1em;
+  background-color: #96df9b;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.bottoni-domanda input[type="submit"]:hover {
+  background-color: #6ec36e;
+}
+
+/* Link home */
+.link-home {
+  margin-top: 2em;
+  font-size: 0.9rem;
+}
+
+.link-home a {
+  color: #1d3e2a;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.link-home a:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+footer {
+  grid-area: footer;
+  text-align: center;
+  padding: 1em;
+  font-size: 0.9rem;
+  color: #1d3e2a;
+  border-top: 1px solid #ccc;
+  background-color: #f0f4f0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+main.contenuto-conferma {
+  grid-area: contenuto;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "login-stato"
+    "conferma-contenitore";
+  background-color: #c7ddb9;
+  padding: 2em;
+  color: #1d3e2a;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+}
+
+
+main .contenuto-conferma  .conferma-contenitore {
+  grid-area: conferma-contenitore;
+  max-width: 100%;
+  margin: 0 auto;
+  justify-items: center;
+}
+
+main.contenuto-conferma .conferma-titolo {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 1em;
+}
+
+main.contenuto-conferma .tabella-conferma {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+
+main.contenuto-conferma .tabella-conferma th, .tabella-conferma td {
+  border: 1px solid #a2c48a;
+  padding: 0.8em;
+  text-align: left;
+}
+
+main.contenuto-conferma .tabella-conferma th {
+  background-color: #9ecf8e;
+}
+
+main.contenuto-conferma .tabella-conferma tbody tr:nth-child(even) td {
+  background-color: #e6f0e7;
+}
+
+main.contenuto-conferma .tabella-conferma tbody tr:nth-child(odd) td {
+  background-color: #c7ddb9;
+}
+
+main.contenuto-conferma .testo-conferma {
+  font-weight: bold;
+  margin-top: 1em;
+}
+
+main.contenuto-conferma .modulo-conferma,
+main.contenuto-conferma .modulo-reset {
+  margin-top: 1em;
+  text-align: center;
+}
+
+main.contenuto-conferma .bottone-conferma,
+main.contenuto-conferma .bottone-reset {
+  padding: 0.6em 1.2em;
+  background-color: #7fc686;
+  border: none;
+  color: white;
+  font-size: 1em;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+main.contenuto-conferma .bottone-conferma:hover,
+main.contenuto-conferma .bottone-reset:hover {
+  background-color: #5ea96d;
+}
+
+main.contenuto-conferma .messaggio-errore {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+}
+
+main.contenuto-conferma .link-indietro {
+  text-align: center;
+  margin-top: 2em;
+}
+main.contenuto-conferma .contenitore-pulsanti {
+  display: flex;
+  justify-content:center;
+  max-width: 70%;
+    gap: 1em; /* spazio tra i due form */
+}
+
+/* Rimuovi eventuali text-align:center da modulo-conferma e modulo-reset, 
+   perché interferiscono con il flex */
+main.contenuto-conferma .modulo-conferma, .modulo-reset {
+  text-align: initial;
+  margin: 0;
+  flex: 1; /* i form occupano entrambi metà o stessa proporzione dello spazio */
+}
+main.contenuto-conferma .link-bottone {
+  text-decoration: none;     /* togli la sottolineatura */
+  color: #3a7a35;            /* verde scuro, più elegante */
+  font-weight: bold;
+  padding: 0.4em 0.8em;
+  border: 2px solid #7fc686; /* bordo verde chiaro */
+  border-radius: 5px;
+  background-color: #e6f0e7; /* sfondo chiaro */
+  transition: background-color 0.3s, color 0.3s;
+}
+
+main.contenuto-conferma .link-bottone:hover,
+main.contenuto-conferma .link-bottone:focus {
+  background-color: #7fc686;
+  color: white;
+  outline: none;
+  text-decoration: none;
+  cursor: pointer;
+}
