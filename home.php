@@ -1,6 +1,8 @@
 <?php
 include('controllo_login.php');
-include('connessione.php'); // connessione al database
+require_once('connessione.php'); // Include il file di connessione
+
+$conn = getConnessione(); // Ottieni la connessione al database
 
 $saldo = 0;
 $nick = "non loggato";

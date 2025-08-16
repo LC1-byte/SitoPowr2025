@@ -1,10 +1,11 @@
 <?php
 
-require_once 'connessione.php'; // Include il file di connessione
-
 include "controllo_login.php";
 include "menu.php";
 require_once "connessione.php";  // 👈 connessione centralizzata
+
+$conn = getConnessione(); // Ottieni la connessione al database
+
 
 accesso_riservato('artigiano');  // Solo artigiani possono entrare
 

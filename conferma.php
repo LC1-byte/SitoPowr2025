@@ -1,8 +1,9 @@
 <?php
-session_start();
 include "controllo_login.php";
-include "connessione.php"; // connessione unica $conn
+require_once('connessione.php'); // Include il file di connessione
 include "menu.php";
+
+$conn = getConnessione(); // Ottieni la connessione al database
 
 accesso_riservato("artigiano");
 

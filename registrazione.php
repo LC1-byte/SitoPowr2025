@@ -1,8 +1,9 @@
 <?php
-session_start();
 include "menu.php";
 
 require_once "connessione.php"; // 👈 connessione centralizzata
+
+$conn = getConnessione(); // Ottieni la connessione al database
 
 // Funzione per validare con espressione regolare
 function valida_input($valore, $pattern) {
