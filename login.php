@@ -1,83 +1,73 @@
 <?php
 session_start();
+require_once __DIR__ . '/connessione.php';  // usa la connessione centralizzata
 
 $error_message = "";
 $user = "";
 $pwd = "";
 $ricordami = false;
 
-// Se ci sono cookie per ricordami, li uso per precompilare i campi
+// Precompila dal cookie "ricordami"
 if (isset($_COOKIE['eco_user']) && isset($_COOKIE['eco_pwd'])) {
     $user = $_COOKIE['eco_user'];
     $pwd = $_COOKIE['eco_pwd'];
     $ricordami = true;
 }
 
-// Se la richiesta è POST, processo il login
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Recupero dati inseriti nel form
-    if (isset($_POST['user'])) {
-        $user = trim($_POST['user']);
-    }
-    if (isset($_POST['pwd'])) {
-        $pwd = trim($_POST['pwd']);
-    }
+    $user = isset($_POST['user']) ? trim($_POST['user']) : "";
+    $pwd  = isset($_POST['pwd'])  ? trim($_POST['pwd'])  : "";
     $ricordami = isset($_POST['ricordami']);
 
-    // Controllo login nel database
-    $conn = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
-    if (!$conn) {
-        die("Errore di connessione al database.");
+    // Prepara query utente
+    $stmt = mysqli_prepare($conn, "SELECT id, password, artigiano FROM utenti WHERE nick = ? LIMIT 1");
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "s", $user);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_bind_result($stmt, $id_utente, $password_db, $artigiano);
+        $found = mysqli_stmt_fetch($stmt);
+        mysqli_stmt_close($stmt);
+    } else {
+        $found = false;
     }
 
-    // Uso query preparata per sicurezza
-    $stmt = mysqli_prepare($conn, "SELECT ID, PASSWORD, ARTIGIANO FROM UTENTI WHERE NICK = ?");
-    mysqli_stmt_bind_param($stmt, "s", $user);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $id_utente, $password_db, $artigiano);
-    mysqli_stmt_fetch($stmt);
-    mysqli_stmt_close($stmt);
-    mysqli_close($conn);
-
-    if ($password_db === null) {
-        // Utente non trovato
+    if (!$found) {
         $error_message = "Utente o password errati, riprova.";
     } else {
-        // Verifico password (qui semplice confronto perché password in chiaro nel DB)
+        // Confronto diretto (senza hash, come richiesto per ora)
         if ($pwd === $password_db) {
-            // Login OK: imposto sessione
-            session_regenerate_id(true); // per sicurezza
-            $_SESSION['loggedin'] = true;
-            $_SESSION['nick'] = $user;
-            $_SESSION['id'] = $id_utente;
-            $_SESSION['artigiano'] = $artigiano;
+            session_regenerate_id(true);
+            $_SESSION['loggedin']  = true;
+            $_SESSION['nick']      = $user;
+            $_SESSION['id']        = $id_utente;
+            $_SESSION['artigiano'] = (int)$artigiano === 1;
 
-            // Saldo per artigiano o azienda da recuperare
-            if ($artigiano) {
-                $conn2 = mysqli_connect('localhost', 'lettore', 'P@ssw0rd!', 'eco_scambio');
-                $result = mysqli_query($conn2, "SELECT CREDIT FROM DATI_ARTIGIANI WHERE ID_UTENTE = " . intval($id_utente));
-                if ($result && mysqli_num_rows($result) > 0) {
-                    $row = mysqli_fetch_assoc($result);
-                    $_SESSION['saldo'] = $row['CREDIT'];
-                } else {
-                    $_SESSION['saldo'] = 0;
+            // Saldo: se artigiano leggo la tabella DATI_ARTIGIANI
+            if ($_SESSION['artigiano']) {
+                $saldo = 0;
+                $q2 = "SELECT credit FROM dati_artigiani WHERE id_utente = " . intval($id_utente) . " LIMIT 1";
+                if ($res2 = mysqli_query($conn, $q2)) {
+                    if ($row2 = mysqli_fetch_assoc($res2)) {
+                        $saldo = (float)$row2['credit'];
+                    }
+                    mysqli_free_result($res2);
                 }
-                mysqli_close($conn2);
+                $_SESSION['saldo'] = $saldo;
             } else {
                 $_SESSION['saldo'] = 0;
             }
 
-            // Gestione cookie "ricordami"
+            // Cookie ricordami
             if ($ricordami) {
-                setcookie("eco_user", $user, time() + 72 * 3600);
-                setcookie("eco_pwd", $pwd, time() + 72 * 3600);
+                setcookie("eco_user", $user, time() + 72 * 3600, "/");
+                setcookie("eco_pwd",  $pwd,  time() + 72 * 3600, "/");
             } else {
-                setcookie("eco_user", "", time() - 3600);
-                setcookie("eco_pwd", "", time() - 3600);
+                setcookie("eco_user", "", time() - 3600, "/");
+                setcookie("eco_pwd",  "", time() - 3600, "/");
             }
 
-            // Redirect in base al tipo utente
-            if ($artigiano) {
+            // Redirect
+            if ($_SESSION['artigiano']) {
                 header("Location: domanda.php");
                 exit();
             } else {
@@ -85,62 +75,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 exit();
             }
         } else {
-            // Password errata
             $error_message = "Utente o password errati, riprova.";
         }
     }
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8" />
-    <title>Login - Eco Scambio</title>
-    <link rel="stylesheet" href="style.css" />
-</head>
-<body class="login">
-    <nav class="menu">
-        <?php include("menu.php"); ?>
-    </nav>
-
-    <main class="login-main">
-        <h1 class="login-titolo">Login</h1>
-
-        <?php if ($error_message !== "") { ?>
-            <p class="error"><?php echo htmlspecialchars($error_message); ?></p>
-        <?php } ?>
-
-        <div class="login-contenuto">
-            <form method="post" action="login.php">
-                <p>
-                    <label for="user">Username:</label>
-                    <input type="text" id="user" name="user" value="<?php echo htmlspecialchars($user); ?>" required />
-                </p>
-                <p>
-                    <label for="pwd">Password:</label>
-                    <input type="password" id="pwd" name="pwd" value="<?php echo htmlspecialchars($pwd); ?>" required />
-                </p>
-                <p class="ricordami">
-                    <input type="checkbox" id="ricordami" name="ricordami" <?php if ($ricordami) echo "checked"; ?> />
-                    <label for="ricordami">Ricordami</label>
-                </p>
-                <p>
-                    <input type="reset" value="Cancella" />
-                    <input type="submit" value="Invia" />
-                </p>
-            </form>
-
-            
-        </div>
-        <div class="login-messaggio">
-  <p>Ogni accesso rappresenta una scelta consapevole contro lo spreco.<br>
-  Grazie per contribuire attivamente a un futuro più sostenibile.</p>
-</div>
-    </main>
-
-    <footer>
-        © 2025 Eco Scambio - Tutti i diritti riservati
-    </footer>
-</body>
-</html>
